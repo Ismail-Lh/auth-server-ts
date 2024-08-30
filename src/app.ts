@@ -5,19 +5,19 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import compressFilter from './utils/compressFilter.util';
 import { authRouter, passwordRouter, verifyEmailRouter } from './routes/v1';
-import isAuth from './middleware/isAuth';
 import { errorHandler } from './middleware/errorHandler';
 import config from './config/config';
 import authLimiter from './middleware/authLimiter';
 import { xssMiddleware } from './middleware/xssMiddleware';
 import path from 'node:path';
 
+// Creates an instance of the Express application.
 const app: Express = express();
 
 // Helmet is used to secure this app by configuring the http-header
 app.use(helmet());
 
-// parse json request body
+// Parse json request body
 app.use(express.json());
 
 // parse urlencoded request body
@@ -27,12 +27,13 @@ app.use(xssMiddleware());
 
 app.use(cookieParser());
 
-// Compression is used to reduce the size of the response body
+// Enable compression middleware to compress the response data
 app.use(compression({ filter: compressFilter }));
 
+// Enable CORS middleware to allow cross-origin requests
 app.use(
   cors({
-    // origin is given a array if we want to have multiple origins later
+    // origin is given an array if we want to have multiple origins later
     origin: String(config.cors.cors_origin).split('|'),
     credentials: true
   })
@@ -48,19 +49,22 @@ app.use('/api/v1', passwordRouter);
 
 app.use('/api/v1', verifyEmailRouter);
 
-app.get('/secret', isAuth, (_req, res) => {
-  res.json({
-    message: 'You can see me'
-  });
-});
-
+// This code handles all requests that do not match any other route in the application
 app.all('*', (req, res) => {
+  // Set the response status to 404 (Not Found)
   res.status(404);
+
+  // Check the 'Accept' header of the request to determine the response format
   if (req.accepts('html')) {
+    // If the client accepts HTML, send an HTML file as the response
+    // The path module is used to construct the file path
     res.sendFile(path.join(__dirname, 'views', '404.html'));
   } else if (req.accepts('json')) {
+    // If the client accepts JSON, send a JSON object as the response
     res.json({ error: '404 Not Found' });
   } else {
+    // If the client does not accept HTML or JSON, send plain text as the response
+    // Set the response content type to 'text/plain'
     res.type('txt').send('404 Not Found');
   }
 });
