@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import path from 'path';
+import path from 'node:path';
 import Joi from 'joi';
 
 dotenv.config({
@@ -16,8 +16,6 @@ const envSchema = Joi.object().keys({
   REFRESH_TOKEN_SECRET: Joi.string().min(8).required(),
   REFRESH_TOKEN_EXPIRE: Joi.string().required().default('1d'),
   REFRESH_TOKEN_COOKIE_NAME: Joi.string().required().default('jid'),
-  MYSQL_DATABASE: Joi.string().required(),
-  MYSQL_ROOT_PASSWORD: Joi.string().required(),
   DATABASE_URL: Joi.string().required(),
   SMTP_HOST: Joi.string().required(),
   SMTP_PORT: Joi.string().default('587'),
