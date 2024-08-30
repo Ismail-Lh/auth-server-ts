@@ -1,14 +1,16 @@
 import type { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { randomUUID } from 'crypto';
+// import { randomUUID } from 'node:crypto';
 import * as argon2 from 'argon2';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
+
 import prismaClient from '../config/prisma';
 import type {
   TypedRequest,
   UserLoginCredentials,
   UserSignUpCredentials
 } from '../types/types';
+
 import {
   createAccessToken,
   createRefreshToken
@@ -20,12 +22,22 @@ import {
   refreshTokenCookieConfig
 } from '../config/cookieConfig';
 
-import { sendVerifyEmail } from '../utils/sendEmail.util';
+// import { sendVerifyEmail } from '../utils/sendEmail.util';
 import logger from '../middleware/logger';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 const { verify } = jwt;
+
+const userExists = async (email: string) => {
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email
+    }
+  });
+
+  return user;
+};
 
 /**
  * This function handles the signup process for new users. It expects a request object with the following properties:
@@ -52,11 +64,7 @@ export const handleSignUp = async (
     });
   }
 
-  const checkUserEmail = await prismaClient.user.findUnique({
-    where: {
-      email
-    }
-  });
+  const checkUserEmail = await userExists(email);
 
   if (checkUserEmail) return res.sendStatus(httpStatus.CONFLICT); // email is already in db
 
@@ -71,21 +79,24 @@ export const handleSignUp = async (
       }
     });
 
-    const token = randomUUID();
-    const expiresAt = new Date(Date.now() + 3600000); // Token expires in 1 hour
+    // const token = randomUUID();
+    // const expiresAt = new Date(Date.now() + 3600000); // Token expires in 1 hour
 
-    await prismaClient.emailVerificationToken.create({
-      data: {
-        token,
-        expiresAt,
-        userId: newUser.id
-      }
+    // await prismaClient.emailVerificationToken.create({
+    //   data: {
+    //     token,
+    //     expiresAt,
+    //     userId: newUser.id
+    //   }
+    // });
+
+    // // Send an email with the verification link
+    // sendVerifyEmail(email, token);
+
+    res.status(httpStatus.CREATED).json({
+      message: 'New user created',
+      user: { name: newUser.name, email: newUser.email }
     });
-
-    // Send an email with the verification link
-    sendVerifyEmail(email, token);
-
-    res.status(httpStatus.CREATED).json({ message: 'New user created' });
   } catch (err) {
     res.status(httpStatus.INTERNAL_SERVER_ERROR);
   }

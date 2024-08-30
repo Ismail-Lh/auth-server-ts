@@ -15,7 +15,7 @@ type RequestValidationSchema = RequireAtLeastOne<
  * @returns Returns an HTTP response 400 BAD REQUEST if a validation error occurs or calls next if no error occurs
  *
  */
-const validate =
+const validateRequest =
   (schema: RequestValidationSchema) =>
   (req: Request, res: Response, next: NextFunction) => {
     const { error } = Joi.object(schema).validate(
@@ -38,4 +38,4 @@ const validate =
     }
   };
 
-export default validate;
+export default validateRequest;

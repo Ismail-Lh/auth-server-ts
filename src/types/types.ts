@@ -2,16 +2,18 @@ import type { NextFunction, Request, Response } from 'express';
 import type { DeepPartial } from 'utility-types';
 import type { IFilterXSSOptions } from 'xss';
 
-// See this for the following types
-// https://stackoverflow.com/questions/34508081/how-to-add-typescript-definitions-to-express-req-res
+// This code defines a type utility called RequireAtLeastOne.
+// It takes a generic type T and ensures that at least one property of T is required.
+// The resulting type will have all properties of T as required, except for one which will be optional.
+// This utility is useful when you want to enforce that at least one property must be present in an object.
 // https://stackoverflow.com/questions/61132262/typescript-deep-partial
-
 export type RequireAtLeastOne<T> = {
   [K in keyof T]-?: Required<Pick<T, K>> &
     Partial<Pick<T, Exclude<keyof T, K>>>;
 }[keyof T];
 
 // More strictly typed Express.Request type
+// https://stackoverflow.com/questions/34508081/how-to-add-typescript-definitions-to-express-req-res
 export type TypedRequest<
   ReqBody = Record<string, unknown>,
   QueryString = Record<string, unknown>
@@ -33,7 +35,7 @@ export type ExpressMiddleware<
   next: NextFunction
 ) => Promise<void> | void;
 
-// Example usage from Stackoverflow:
+// Example usage from stackoverflow:
 // type Req = { email: string; password: string };
 
 // type Res = { message: string };

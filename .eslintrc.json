@@ -23,7 +23,7 @@
   "plugins": ["@typescript-eslint", "promise", "import"],
   "rules": {
     "indent": "off",
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": "off",
     "quotes": ["error", "single"],
     "semi": "off",
     "@typescript-eslint/indent": "off",

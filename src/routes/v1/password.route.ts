@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import validate from '../../middleware/validate';
+import validate from '../../middleware/validateRequest';
 import {
   forgotPasswordSchema,
   resetPasswordSchema
-} from '../../validations/password.validation';
+} from '../../schemas/password.validation';
 import * as passwordController from '../../controller/forgotPassword.controller';
 
 const passwordRouter = Router();

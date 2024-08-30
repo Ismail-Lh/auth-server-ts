@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import validate from '../../middleware/validate';
+import validate from '../../middleware/validateRequest';
 import {
   sendVerifyEmailSchema,
   verifyEmailSchema
-} from '../../validations/verifyEmail.validation';
+} from '../../schemas/verifyEmail.validation';
 import * as emailController from '../../controller/verifyEmail.controller';
 
 const verifyEmailRouter = Router();
