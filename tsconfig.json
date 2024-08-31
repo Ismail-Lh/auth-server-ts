@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "target": "ES2022",
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
@@ -14,9 +14,12 @@
     "incremental": true,
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types", "./src/types"],
-    "lib": ["ES6", "dom"],
+    "lib": ["es2022", "dom"],
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "esModuleInterop": true,
+
+    // strict settings
     "strict": true,
     "strictNullChecks": true,
     "allowUnusedLabels": false,
@@ -26,7 +29,7 @@
     "exactOptionalPropertyTypes": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "noImplicitReturns": false,
+    "noImplicitReturns": false, // is false bc of some error with next() and other returns
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,

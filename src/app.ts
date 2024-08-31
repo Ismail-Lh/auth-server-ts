@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import compressFilter from './utils/compressFilter.util';
-import { authRouter, passwordRouter, verifyEmailRouter } from './routes/v1';
+import { authRouter } from './routes/v1';
 import { errorHandler } from './middleware/errorHandler';
 import config from './config/config';
 import authLimiter from './middleware/authLimiter';
@@ -45,9 +45,9 @@ if (config.node_env === 'production') {
 
 app.use('/api/v1/auth', authRouter);
 
-app.use('/api/v1', passwordRouter);
+// app.use('/api/v1', passwordRouter);
 
-app.use('/api/v1', verifyEmailRouter);
+// app.use('/api/v1', verifyEmailRouter);
 
 // This code handles all requests that do not match any other route in the application
 app.all('*', (req, res) => {
