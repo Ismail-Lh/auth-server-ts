@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 import httpStatus from 'http-status';
 // import { randomUUID } from 'node:crypto';
-import * as argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 // import jwt, { JwtPayload } from 'jsonwebtoken';
 
 // const { verify } = jwt;
@@ -68,10 +68,10 @@ export const handleSignUp = async (
     return res.status(httpStatus.CONFLICT).json({
       message: 'Email is already in use! Please use another email!'
     });
-  } // email is already in db
+  }
 
   try {
-    const hashedPassword = await argon2.hash(password);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = await prismaClient.user.create({
       data: {

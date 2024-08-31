@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@prisma/client": "^4.11.0",
-    "argon2": "^0.30.3",
+    "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -37,7 +37,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
-    "@types/argon2": "^0.15.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.3",
