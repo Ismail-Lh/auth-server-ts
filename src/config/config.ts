@@ -15,7 +15,7 @@ const envSchema = Joi.object().keys({
   ACCESS_TOKEN_EXPIRE: Joi.string().required().default('20m'),
   REFRESH_TOKEN_SECRET: Joi.string().min(8).required(),
   REFRESH_TOKEN_EXPIRE: Joi.string().required().default('1d'),
-  REFRESH_TOKEN_COOKIE_NAME: Joi.string().required().default('jid'),
+  REFRESH_TOKEN_COOKIE_NAME: Joi.string().required().default('refresh_token'),
   DATABASE_URL: Joi.string().required()
   // SMTP_HOST: Joi.string().required(),
   // SMTP_PORT: Joi.string().default('587'),

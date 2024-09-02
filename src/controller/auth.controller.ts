@@ -9,33 +9,20 @@ import bcrypt from 'bcryptjs';
 import prismaClient from '../config/prisma';
 import type {
   TypedRequest,
-  // UserLoginCredentials,
+  UserLoginCredentials,
   UserSignUpCredentials
 } from '../types/types';
 
-// import {
-//   createAccessToken,
-//   createRefreshToken
-// } from '../utils/generateTokens.util';
-// import config from '../config/config';
+import config from '../config/config';
 
-// import {
-//   clearRefreshTokenCookieConfig,
-//   refreshTokenCookieConfig
-// } from '../config/cookieConfig';
+import {
+  createAndSaveNewTokens,
+  handleExistingRefreshToken,
+  userExists
+} from '../helpers/auth.helper';
 
 // import { sendVerifyEmail } from '../utils/sendEmail.util';
 // import logger from '../middleware/logger';
-
-const userExists = async (email: string) => {
-  const user = await prismaClient.user.findUnique({
-    where: {
-      email
-    }
-  });
-
-  return user;
-};
 
 /**
  * This function handles the signup process for new users. It expects a request object with the following properties:
@@ -116,102 +103,65 @@ export const handleSignUp = async (
  *   - A 200 OK status code and an access token if the login is successful and a new refresh token is stored in the database and a new refresh token cookie is set.
  *   - A 500 INTERNAL SERVER ERROR status code if there is an error in the server.
  */
-// export const handleLogin = async (
-//   req: TypedRequest<UserLoginCredentials>,
-//   res: Response
-// ) => {
-//   const cookies = req.cookies;
 
-//   const { email, password } = req.body;
+export const handleLogin = async (
+  req: TypedRequest<UserLoginCredentials>,
+  res: Response
+): Promise<Response> => {
+  const cookies = req.cookies;
 
-//   if (!email || !password) {
-//     return res
-//       .status(httpStatus.BAD_REQUEST)
-//       .json({ message: 'Email and password are required!' });
-//   }
+  const { email, password } = req.body;
 
-//   const user = await prismaClient.user.findUnique({
-//     where: {
-//       email
-//     }
-//   });
+  if (!email || !password) {
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ message: 'Email and password are required!' });
+  }
 
-//   if (!user) return res.sendStatus(httpStatus.UNAUTHORIZED);
+  const user = await userExists(email);
 
-//   // check if email is verified
-//   if (!user.emailVerified) {
-//     res.status(httpStatus.UNAUTHORIZED).json({
-//       message: 'Your email is not verified! Please confirm your email!'
-//     });
-//   }
+  if (!user)
+    return res
+      .status(httpStatus.UNAUTHORIZED)
+      .json({ message: 'Unauthorized access. Please check your credentials.' });
 
-//   // check password
-//   try {
-//     if (await argon2.verify(user.password, password)) {
-//       // if there is a refresh token in the req.cookie, then we need to check if this
-//       // refresh token exists in the database and belongs to the current user than we need to delete it
-//       // if the token does not belong to the current user, then we delete all refresh tokens
-//       // of the user stored in the db to be on the safe site
-//       // we also clear the cookie in both cases
-//       if (cookies?.[config.jwt.refresh_token.cookie_name]) {
-//         // check if the given refresh token is from the current user
-//         const checkRefreshToken = await prismaClient.refreshToken.findUnique({
-//           where: {
-//             token: cookies[config.jwt.refresh_token.cookie_name]
-//           }
-//         });
+  // check if email is verified
+  // if (!user.emailVerified) {
+  //   res.status(httpStatus.UNAUTHORIZED).json({
+  //     message: 'Your email is not verified! Please confirm your email!'
+  //   });
+  // }
 
-//         // if this token does not exists int the database or belongs to another user,
-//         // then we clear all refresh tokens from the user in the db
-//         if (!checkRefreshToken || checkRefreshToken.userId !== user.id) {
-//           await prismaClient.refreshToken.deleteMany({
-//             where: {
-//               userId: user.id
-//             }
-//           });
-//         } else {
-//           // else everything is fine and we just need to delete the one token
-//           await prismaClient.refreshToken.delete({
-//             where: {
-//               token: cookies[config.jwt.refresh_token.cookie_name]
-//             }
-//           });
-//         }
+  try {
+    // check password
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
-//         // also clear the refresh token in the cookie
-//         res.clearCookie(
-//           config.jwt.refresh_token.cookie_name,
-//           clearRefreshTokenCookieConfig
-//         );
-//       }
+    // if the password is correct, then we create a new access token and a new refresh token
+    if (isPasswordCorrect) {
+      // get the refresh token from the cookie
+      const refreshTokenName = config.jwt.refresh_token.cookie_name;
+      const RefreshTokenFromCookies = cookies[refreshTokenName];
 
-//       const accessToken = createAccessToken(user.id);
+      //  check if the refresh token exists in the cookie
+      if (RefreshTokenFromCookies) {
+        await handleExistingRefreshToken(RefreshTokenFromCookies, user.id, res);
+      }
 
-//       const newRefreshToken = createRefreshToken(user.id);
+      // Create new access token
+      const accessToken = await createAndSaveNewTokens(user.id, res);
 
-//       // store new refresh token in db
-//       await prismaClient.refreshToken.create({
-//         data: {
-//           token: newRefreshToken,
-//           userId: user.id
-//         }
-//       });
+      // Send the access token to the client (frontend)
+      return res.json({ accessToken });
+    }
 
-//       // save refresh token in cookie
-//       res.cookie(
-//         config.jwt.refresh_token.cookie_name,
-//         newRefreshToken,
-//         refreshTokenCookieConfig
-//       );
-
-//       // send access token per json to user so it can be stored in the localStorage
-//       return res.json({ accessToken });
-//     }
-//     return res.status(httpStatus.UNAUTHORIZED);
-//   } catch (err) {
-//     return res.status(httpStatus.INTERNAL_SERVER_ERROR);
-//   }
-// };
+    // If the password is incorrect then we return an unauthorized status
+    return res
+      .status(httpStatus.UNAUTHORIZED)
+      .json({ message: 'Unauthorized access. Please check your credentials.' });
+  } catch (err) {
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: err });
+  }
+};
 
 /**
  * This function handles the logout process for users. It expects a request object with the following properties:

@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import validateRequest from '../../middleware/validateRequest';
-import { signupSchema } from '../../schemas/auth.schema';
+import { signupSchema, loginSchema } from '../../schemas/auth.schema';
 import {
-  // handleLogin,
+  handleLogin,
   // handleLogout,
   // handleRefresh,
   handleSignUp
@@ -12,7 +12,7 @@ const authRouter = Router();
 
 authRouter.post('/signup', validateRequest(signupSchema), handleSignUp);
 
-// authRouter.post('/login', validateRequest(loginSchema), handleLogin);
+authRouter.post('/login', validateRequest(loginSchema), handleLogin);
 
 // authRouter.post('/logout', handleLogout);
 
