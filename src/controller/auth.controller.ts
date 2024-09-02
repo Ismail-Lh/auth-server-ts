@@ -20,6 +20,7 @@ import {
   handleExistingRefreshToken,
   userExists
 } from '../helpers/auth.helper';
+import { clearRefreshTokenCookieConfig } from '../config/cookieConfig';
 
 // import { sendVerifyEmail } from '../utils/sendEmail.util';
 // import logger from '../middleware/logger';
@@ -174,38 +175,43 @@ export const handleLogin = async (
  *   - A 204 NO CONTENT status code if the refresh token does not exists in the database
  *   - A 204 NO CONTENT status code if the refresh token cookie is successfully cleared
  */
-// export const handleLogout = async (req: TypedRequest, res: Response) => {
-//   const cookies = req.cookies;
+export const handleLogout = async (
+  req: TypedRequest,
+  res: Response
+): Promise<Response> => {
+  const cookies = req.cookies;
 
-//   if (!cookies[config.jwt.refresh_token.cookie_name]) {
-//     return res.sendStatus(httpStatus.NO_CONTENT); // No content
-//   }
-//   const refreshToken = cookies[config.jwt.refresh_token.cookie_name];
+  const refreshTokenFromCookies = cookies[config.jwt.refresh_token.cookie_name];
 
-//   // Is refreshToken in db?
-//   const foundRft = await prismaClient.refreshToken.findUnique({
-//     where: { token: refreshToken }
-//   });
+  if (!refreshTokenFromCookies) {
+    return res.sendStatus(httpStatus.NO_CONTENT);
+  }
 
-//   if (!foundRft) {
-//     res.clearCookie(
-//       config.jwt.refresh_token.cookie_name,
-//       clearRefreshTokenCookieConfig
-//     );
-//     return res.sendStatus(httpStatus.NO_CONTENT);
-//   }
+  // Is refreshToken in db?
+  const refreshTokenFromDB = await prismaClient.refreshToken.findUnique({
+    where: { token: refreshTokenFromCookies }
+  });
 
-//   // Delete refreshToken in db
-//   await prismaClient.refreshToken.delete({
-//     where: { token: refreshToken }
-//   });
+  if (!refreshTokenFromDB) {
+    res.clearCookie(
+      config.jwt.refresh_token.cookie_name,
+      clearRefreshTokenCookieConfig
+    );
+    return res.sendStatus(httpStatus.NO_CONTENT);
+  }
 
-//   res.clearCookie(
-//     config.jwt.refresh_token.cookie_name,
-//     clearRefreshTokenCookieConfig
-//   );
-//   return res.sendStatus(httpStatus.NO_CONTENT);
-// };
+  // Delete refreshToken in db
+  await prismaClient.refreshToken.delete({
+    where: { token: refreshTokenFromCookies }
+  });
+
+  res.clearCookie(
+    config.jwt.refresh_token.cookie_name,
+    clearRefreshTokenCookieConfig
+  );
+
+  return res.sendStatus(httpStatus.NO_CONTENT);
+};
 
 /**
  * This function handles the refresh process for users. It expects a request object with the following properties:
