@@ -4,7 +4,7 @@ import { signupSchema, loginSchema } from '../../schemas/auth.schema';
 import {
   handleLogin,
   handleLogout,
-  // handleRefresh,
+  handleRefresh,
   handleSignUp
 } from '../../controller/auth.controller';
 
@@ -16,6 +16,6 @@ authRouter.post('/login', validateRequest(loginSchema), handleLogin);
 
 authRouter.post('/logout', handleLogout);
 
-// authRouter.post('/refresh', handleRefresh);
+authRouter.post('/refresh', handleRefresh);
 
 export default authRouter;
