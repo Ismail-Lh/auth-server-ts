@@ -89,7 +89,7 @@ export const handleSignUp = async (
     // sendVerifyEmail(email, token);
 
     res.status(httpStatus.CREATED).json({
-      message: 'New user created successfully!',
+      message: 'Registration successful! You can now login.',
       user: { name: newUser.name, email: newUser.email }
     });
   } catch (err) {
@@ -255,7 +255,7 @@ export const handleRefresh = async (req: TypedRequest, res: Response) => {
         // Delete all tokens of the user because we detected that a token was stolen from him
         await prismaClient.refreshToken.deleteMany({
           where: {
-            userId: payload.userId
+            userId: payload['userId']
           }
         });
       }
@@ -275,11 +275,11 @@ export const handleRefresh = async (req: TypedRequest, res: Response) => {
     refreshTokenFromCookies,
     REFRESH_TOKEN_SECRET,
     async (err: unknown, payload: JwtPayload) => {
-      if (err || refreshTokenFromDB.userId !== payload.userId) {
+      if (err || refreshTokenFromDB.userId !== payload['userId']) {
         return res.sendStatus(httpStatus.FORBIDDEN);
       }
 
-      const accessToken = await createAndSaveNewTokens(payload.userId, res);
+      const accessToken = await createAndSaveNewTokens(payload['userId'], res);
 
       return res.json({ accessToken });
     }
